@@ -9,13 +9,18 @@ export class UserService {
   constructor(@InjectModel(User.name) private readonly userModel:Model<User>){}
 
   async create(createUserDto: CreateUserDto):Promise<User> {
+
     const createUser = await new this.userModel(createUserDto)
+
     createUser.save()
+
     return createUser
   }
 
   async findOne(createUserDto: CreateUserDto):Promise<User | undefined> {
+    
     const findUser= await this.userModel.findOne(createUserDto)
+
     return findUser
   }
 

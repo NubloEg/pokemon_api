@@ -29,14 +29,17 @@ export class AuthService {
   }
 
   async register(createUserDto: CreateUserDto) {
+
     const findUser=await this.userService.findOne(createUserDto)
-    console.log(findUser)
+
     if(findUser) {
       throw new BadRequestException('this email use')
     }
     const createUser = await this.userService.create(createUserDto);
+
     return {
-      ...createUser,
+      id:createUser._id,
+      email:createUser.email,
       access_token: this.jwtService.sign({email:createUser.email,password:createUser.password}),
     };
   }
