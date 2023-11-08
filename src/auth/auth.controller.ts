@@ -1,6 +1,6 @@
 import { CreateUserDto } from './../user/dto/create-user.dto';
 import { AuthService } from './auth.service';
-import {Request, Controller, Post, UseGuards, Get, Body } from '@nestjs/common';
+import {Request, Controller, Post, UseGuards, Get, Body, UsePipes, ValidationPipe } from '@nestjs/common';
 import { LocalAuthGuard } from './guard/local-auth.guard';
 
 @Controller('auth')
@@ -14,6 +14,7 @@ export class AuthController {
   }
 
   @Post('register')
+  @UsePipes(new ValidationPipe())
   async register(@Body() createUserDto:CreateUserDto) {
     return this.authService.register(createUserDto)
   }

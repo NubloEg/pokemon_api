@@ -1,6 +1,6 @@
 import { UserService } from './../user/user.service';
 import { CreateUserDto } from './../user/dto/create-user.dto';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { User } from 'src/user/entities/user.entity';
 
@@ -21,16 +21,20 @@ export class AuthService {
   }
 
   async login(user: User) {
+    console.log(user)
     const payload = { username: user.email, sub: user.id };
     return {
       access_token: this.jwtService.sign(payload),
     };
   }
 
-  async register(user: CreateUserDto) {
-    console.log(user)
-    const createUser = await this.userService.create(user);
-    console.log(createUser)
+  async register(createUserDto: CreateUserDto) {
+    const findUser=await this.userService.findOne(createUserDto)
+    console.log(findUser)
+    if(findUser) {
+      throw new BadRequestException('this email use')
+    }
+    const createUser = await this.userService.create(createUserDto);
     return {
       ...createUser,
       access_token: this.jwtService.sign({email:createUser.email,password:createUser.password}),
