@@ -1,8 +1,8 @@
 import { UserService } from './../user/user.service';
 import { CreateUserDto } from './../user/dto/create-user.dto';
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { User } from 'src/user/entities/user.entity';
+import * as argon2 from "argon2"
 
 @Injectable()
 export class AuthService {
@@ -11,27 +11,27 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async validateUser(createUserDto: CreateUserDto): Promise<any> {
-    const user = await this.userService.findOne(createUserDto);
-    if (user && user.password === createUserDto.password) {
-      const { password, ...result } = user;
-      return result;
+  async validateUser(email: string ,password: string): Promise<any> {
+    const user = await this.userService.findOne(email);
+    if(user){
+    const passwordIsMatch = await argon2.verify(user.password,password)
+    if(passwordIsMatch){
+      return user
     }
-    null;
+    throw new BadRequestException('Email or password incorrect')
+  }
   }
 
-  async login(user: User) {
-    console.log(user)
-    const payload = { username: user.email, sub: user.id };
-    return {
-      access_token: this.jwtService.sign(payload),
+  async login(user: {id:string,email:string}) {
+    const {id,email}=user;
+    return {id,email,
+      access_token: this.jwtService.sign({id:user.id,email:user.email}),
     };
   }
 
   async register(createUserDto: CreateUserDto) {
 
-    const findUser=await this.userService.findOne(createUserDto)
-
+    const findUser=await this.userService.findOne(createUserDto.email)
     if(findUser) {
       throw new BadRequestException('this email use')
     }
@@ -40,7 +40,7 @@ export class AuthService {
     return {
       id:createUser._id,
       email:createUser.email,
-      access_token: this.jwtService.sign({email:createUser.email,password:createUser.password}),
+      access_token: this.jwtService.sign({id:createUser._id,email:createUser.email}),
     };
   }
 
