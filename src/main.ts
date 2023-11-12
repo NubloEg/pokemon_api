@@ -3,7 +3,6 @@ import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.setGlobalPrefix('api');
  app.enableCors({
     origin: true, // Разрешаем доступ только с этого домена
     credentials: true, // Разрешаем отправку куки
